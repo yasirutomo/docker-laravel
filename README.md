@@ -19,6 +19,9 @@ Basic docker configuration for Laravel (or any framework).
 * docker --version
 * you are ready to go
 
+## laravel
+* put your laravel project in www-\*/public
+
 ## reminder
 * docker compose build
 * docker compose up -d (add container name here to be specific)
