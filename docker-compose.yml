@@ -1,0 +1,57 @@
+version: '3.8'
+
+# Services
+services:
+
+    # PHP Service
+    php-81:
+        restart: always
+        container_name: php-81
+        build:
+            dockerfile: php81-dockerfile
+        volumes:
+            - './www-pmb/public:/var/www/html/pmb'
+            - ./config/php81.ini:/usr/local/etc/php/php.ini
+            - ./config/php81.ini:/usr/local/etc/php/php.ini-production
+            - ./config/php81.ini:/usr/local/etc/php/php.ini-development
+        depends_on:
+            - mariadb
+
+    # App 1 Nginx Service
+    app-pmb:
+        restart: always
+        container_name: app-pmb
+        image: nginx:latest
+        ports:
+            - 8080:80
+        links:
+            - 'php-81'
+        volumes:
+            - './www-pmb/public:/var/www/html/pmb'
+            - './nginx-conf-pmb:/etc/nginx/conf.d'
+            - './log/error-pmb.log:/var/log/nginx/error.log'
+            - './log/access-pmb.log:/var/log/nginx/access.log'
+        depends_on:
+            - php-81
+
+    # MariaDB Service
+    mariadb:
+        restart: always
+        container_name: mariadb
+        image: mariadb:10.9
+        environment:
+            MYSQL_ROOT_PASSWORD: YOURPASSWORD
+        volumes:
+            - ./mysqldata:/var/lib/mysql
+
+    # phpMyAdmin Service
+    phpmyadmin:
+        restart: always
+        container_name: phpmyadmin
+        image: phpmyadmin/phpmyadmin:latest
+        ports:
+            - 8090:80
+        environment:
+            PMA_HOST: mariadb
+        depends_on:
+            - mariadb
