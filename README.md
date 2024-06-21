@@ -21,6 +21,9 @@ Basic docker configuration for Laravel (or any framework).
 
 ## laravel
 * put your laravel project in www-\*/public
+* Contoh command migrate dan seeder laravel pada docker:
+- migrate: docker exec -it -w /var/www/html/sso php-81 php artisan migrate
+- seeder: docker exec -it -w /var/www/html/sso php-81 php artisan db:seed
 
 ## reminder
 * docker compose build

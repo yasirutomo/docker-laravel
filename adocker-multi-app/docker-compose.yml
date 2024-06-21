@@ -1,0 +1,111 @@
+version: '3.8'
+
+# Services
+services:
+
+    # PHP Service
+    php-81:
+        restart: always
+        container_name: php-81
+        build:
+            dockerfile: php81-dockerfile
+        volumes:
+            - './www/api/public:/var/www/html/api'
+            - './www/sso/public:/var/www/html/sso'
+            - './www/siakad/public:/var/www/html/siakad'
+            - './www/simpeg/public:/var/www/html/simpeg'
+            - ./config/php81.ini:/usr/local/etc/php/php.ini
+            - ./config/php81.ini:/usr/local/etc/php/php.ini-production
+            - ./config/php81.ini:/usr/local/etc/php/php.ini-development
+        depends_on:
+            - mariadb
+
+    # App 1 Nginx Service
+    app-api:
+        restart: always
+        container_name: app-api
+        image: nginx:latest
+        ports:
+            - 8080:80
+        links:
+            - 'php-81'
+        volumes:
+            - './www/api/public:/var/www/html/api'
+            - './nginx/api:/etc/nginx/conf.d'
+            - './log/api/error.log:/var/log/nginx/error.log'
+            - './log/api/access.log:/var/log/nginx/access.log'
+        depends_on:
+            - php-81
+
+    # App 2 Nginx Service
+    app-sso:
+        restart: always
+        container_name: app-sso
+        image: nginx:latest
+        ports:
+            - 8081:80
+        links:
+            - 'php-81'
+        volumes:
+            - './www/sso/public:/var/www/html/sso'
+            - './nginx/sso:/etc/nginx/conf.d'
+            - './log/sso/error.log:/var/log/nginx/error.log'
+            - './log/sso/access.log:/var/log/nginx/access.log'
+        depends_on:
+            - php-81
+
+    # App 3 Nginx Service
+    app-siakad:
+        restart: always
+        container_name: app-siakad
+        image: nginx:latest
+        ports:
+            - 8082:80
+        links:
+            - 'php-81'
+        volumes:
+            - './www/siakad/public:/var/www/html/siakad'
+            - './nginx/siakad:/etc/nginx/conf.d'
+            - './log/siakad/error.log:/var/log/nginx/error.log'
+            - './log/siakad/access.log:/var/log/nginx/access.log'
+        depends_on:
+            - php-81
+
+    # App 4 Nginx Service
+    app-simpeg:
+        restart: always
+        container_name: app-simpeg
+        image: nginx:latest
+        ports:
+            - 8083:80
+        links:
+            - 'php-81'
+        volumes:
+            - './www/simpeg/public:/var/www/html/simpeg'
+            - './nginx/simpeg:/etc/nginx/conf.d'
+            - './log/simpeg/error.log:/var/log/nginx/error.log'
+            - './log/simpeg/access.log:/var/log/nginx/access.log'
+        depends_on:
+            - php-81
+
+    # MariaDB Service
+    mariadb:
+        restart: always
+        container_name: mariadb
+        image: mariadb:10.9
+        environment:
+            MYSQL_ROOT_PASSWORD: integrasi
+        volumes:
+            - ./mysqldata:/var/lib/mysql
+
+    # phpMyAdmin Service
+    phpmyadmin:
+        restart: always
+        container_name: phpmyadmin
+        image: phpmyadmin/phpmyadmin:latest
+        ports:
+            - 8090:80
+        environment:
+            PMA_HOST: mariadb
+        depends_on:
+            - mariadb
